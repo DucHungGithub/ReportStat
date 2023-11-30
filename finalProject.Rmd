@@ -1,0 +1,1323 @@
+---
+output: 
+  pdf_document: 
+    toc_depth: 2
+    fig_width: 7
+    toc: yes
+    fig_height: 3.5
+---
+
+```{r setup, include=FALSE, fig.margin=c(0,0,0,0)}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Activity 1
+## Introduction
+This dataset contains 1500 houses sold in Stockton, California, during 1996 -1998. The purpose of dataset in dataset is to examine how the sale price of houses in Stockton, California, are affected by house characteristics. There are 7 variables:
+
+* Quantifier: sprice, livarea, beds, baths, age
+* Qualitative: lgelot, pool
+
+| Variable | Definition |
+| --- | --- |
+| sprice | Selling price of home, in dollars |
+| livarea | Living area, in hundreds of square feet |
+| beds | Number of beds |
+| baths | Number of baths |
+| lgelot | 1 if lot size is greater than 0.5 acres, 0 otherwise |
+| age | Age of home at time of sale, in years |
+| pool | 1 if home has a pool, 0 otherwise |
+
+###### Data source: Dr. John Knight, Department of Finance, University of the Pacific.
+
+```{r}
+setwd('D:/21125042/midtermStat2')
+data = read.csv('stockton4.csv',header = TRUE)
+attach(data)
+
+```
+
+
+## I. Analysis qualitative
+
+### a) pool:
+```{r fig.height=3, warning=FALSE}
+bangpool=table(pool)
+library(ggplot2)
+# Tính toán phần trăm cho mỗi khoảng
+datapool <- data.frame(
+  category = c("no pool", "pool"),
+  count = c(bangpool)
+)
+# Tính toán phần trăm cho mỗi khoảng
+datapool$percent <- round(datapool$count / sum(datapool$count) * 100, 1)
+# Draw pie chart
+ggplot(datapool, aes(x = "", y = count, fill = category)) +
+  geom_bar(width = 5, stat = "identity", color = "black", linewidth = 0.5) +
+  coord_polar("y", start = 0) + theme_void()+
+  geom_text(aes(label = paste0(percent, "%")), position = position_stack(vjust = 0.5)) +
+  theme(plot.margin=unit(c(0,0,0,0),"cm"))
+```
+
+**Comment:** The number of houses without a pool is large (1402), while the number of houses with a pool is only a small part (98) in the collected data table. There is a significant difference between the number of houses with and without a pool. The proportion of the houses with pool in the dataset is smaller than 7%.
+
+
+
+### b) lgelot:
+```{r fig.height=3, warning=TRUE}
+banglge=table(lgelot)
+# Tính toán phần trăm cho mỗi khoảng
+datalge <- data.frame(
+  category = c("<=0.5", ">0.5"),
+  count = c(banglge)
+)
+# Tính toán phần trăm cho mỗi khoảng
+datalge$percent <- round(datalge$count / sum(datalge$count) * 100, 1)
+# Vẽ biểu đồ tròn
+ggplot(datalge, aes(x = "", y = count, fill = category)) +
+  geom_bar(width = 5, stat = "identity", color = "black", linewidth = 0.5) +
+  coord_polar("y", start = 0) +
+  geom_text(aes(label = paste0(percent, "%")), position = position_stack(vjust = 0.5)) +
+  theme_void()+
+  theme(plot.margin=unit(c(0,0,0,0),"cm"))
+
+```
+
+**Comment:** Most of the houses in the data table have a size of 0.5 acres or smaller(1405), while the number of houses with a larger size is only a very small part(95). This shows a significant difference between houses with a size larger than 0.5 acres and those from 0.5 acres down. The proportion of the houses with size larger than 0.5 acres is bigger than 6%.
+
+### c) pool and lgelot:
+
+```{r fig.height=4.5}
+barplot(table(pool, lgelot), beside = T, col = c("blue", "red"), xlab = "Pool", ylab = "Frequency", main = "Pool and Lgelot")
+legend('topright',legend = c("<=0.5", ">0.5"), fill = c("blue", "red"))
+```
+
+**Comment:** Based on the graph, among the houses with or without a pool, the number of houses with a size larger than 0.5 acres is smaller than the number of houses with a size of 0.5 acres or less.
+
+```{r fig.height=3, warning=FALSE}
+tbl <- table(pool, lgelot)
+
+# Create the first pie chart for houses without a pool
+datanopool <- data.frame(
+  category = c("<=0.5", ">0.5"),
+  count = c(tbl[1,])
+)
+# Tính toán phần trăm cho mỗi khoảng
+datanopool$percent <- round(datanopool$count / sum(datanopool$count) * 100, 1)
+# Vẽ biểu đồ tròn
+p1 = ggplot(datanopool, aes(x = "no pool", y = count, fill = category)) +
+  geom_bar(width = 5, stat = "identity", color = "black", linewidth = 0.5) +
+  coord_polar("y", start = 0) +
+  geom_text(aes(label = paste0(percent, "%")), position = position_stack(vjust = 0.5)) +
+  theme_void()+ggtitle("Pie Chart for Houses without a Pool")
+
+
+
+# Create the second pie chart for houses with a pool
+datapool <- data.frame(
+  category = c("<=0.5", ">0.5"),
+  count = c(tbl[2,])
+)
+# Tính toán phần trăm cho mỗi khoảng
+datapool$percent <- round(datapool$count / sum(datapool$count) * 100, 1)
+# Vẽ biểu đồ tròn
+p2 = ggplot(datapool, aes(x = "pool", y = count, fill = category)) +
+  geom_bar(width = 5, stat = "identity", color = "black", linewidth = 0.5) +
+  coord_polar("y", start = 0) +
+  geom_text(aes(label = paste0(percent, "%")), position = position_stack(vjust = 0.5)) +
+  theme_void()+ggtitle("Pie Chart for Houses with a Pool")+
+  theme(plot.margin=unit(c(0,0,0,0),"cm"))
+
+library(gridExtra)
+grid.arrange(p1, p2, ncol=2)
+
+```
+
+**Comment:** The proportion of houses with a size of larger than 0.5 acres in houses without pool is smaller than the proportion of houses with a size of larger than 0.5 acres in houses with pool.
+
+## II. Analysis Quantifier
+### a) sprice
+
+```{r}
+options(scipen = 999)
+hist(sprice,breaks = 40,col=blues9,xlab = 'sprice (dollars)')
+```
+
+**Comment**: The chart has a positive skew. The selling price with the highest number falls around 100,000 dollars. The selling price falls mostly in the range of 50,000 dollars to 140,000 dollars. The average selling price is about 100,000 dollars.
+
+```{r fig.height=3.5}
+boxplot(sprice,col='blue')
+outliers <- function(x){
+  # 1st and 3rd quantiles
+  q75 = quantile(x, 0.75)
+  q25 = quantile(x, 0.25)
+  IQR = q75-q25
+  # lower bound
+  lower_bound = q25 - 1.5 * IQR
+  # upper bound
+  upper_bound = q75 + 1.5 * IQR
+  # outliers
+  outlier_ind <- which(x < lower_bound | x > upper_bound)
+  if (length(outlier_ind) == 0){
+    return (0)
+  }
+  return(outlier_ind)
+}
+percent_outlier = length(outliers(sprice))/length(sprice)
+print(paste("Percent of outliers:", percent_outlier))
+cat("sd = ", sd(sprice), "\n")
+
+
+```
+
+**Comment**: The data has about 101 outliers, which is accounted for 6.7% in dataset. The data does not have large fluctuations. The highest price is around over 700,000 dollars and the lowest price is about 22,000 dollars. The price difference is about 63000 dollars.
+
+### b) age
+
+```{r}
+hist(age,breaks = 40,col='orange',xlab = 'age (years)')
+```
+
+**Comment**: Houses that are about 18 years occupies the largest number. Houses are distributed from when they were built to about 50 years, with houses for the most from 10 to 22 years old. Houses that are above 60 years are rare and almost non-existent. The average age of the house is around 18
+
+
+```{r fig.height=3.5}
+boxplot(age,col='yellow')
+
+
+percent_outlier = length(outliers(age))/length(age)
+print(paste("Percent of outliers:", percent_outlier))
+ 
+cat("sd = ", sd(age), "\n")
+```
+
+**Comment**: The data has outliers, which is not a large proportion compared to the dataset. The data has a wide fluctuation. The median is skewed downwards. The oldest house is over 95 years and the age difference between the houses is about 13 years.
+
+### c) livarea
+
+```{r}
+hist(livarea,breaks = 40,col='red',xlab = 'livarea (hundreds of ft^2)')
+```
+
+**Comment**: Houses with an area of around 15 hundreds of square feet occupy the largest number. The chart has a positive skew, indicating that houses with small areas occupy a large number. The number of houses is distributed from 10 hundreds of square feet to 18 hundreds of square feet. The average house area is around 17 hundreds of square feet.
+
+```{r fig.height=3.5}
+boxplot(livarea,col='pink')
+percent_outlier = length(outliers(livarea))/length(livarea)
+print(paste("Percent of outliers:", percent_outlier))
+cat("sd = ", sd(livarea), "\n")
+length(outliers(livarea))
+```
+
+**Comment**: The number of outliers is not significant compared to the dataset. The data has fluctuations but not large. The largest area is close to 50 hundreds of square feet and the smallest is around 5 hundreds of square feet. The area difference is about 5 hundreds of square feet.
+
+
+### d) sprice and livarea
+
+```{r fig.height=4}
+plot(livarea,sprice,col = 'purple',xlab='livarea(hundreds of ft^2)',ylab='sprice(dollars)')
+cor(livarea,sprice)
+```
+
+**Comment**: Based on the graph, the higher the area of the house, the higher the selling price of the house. The correlation rate is nearly 80%.
+
+### e) livarea and baths
+
+```{r,include=FALSE,fig.margin=c(2,1,0.5,1)}
+plot(baths,livarea,col = 'blue',xlab='baths',ylab='livarea(hundreds of ft^2)')
+```
+
+```{r}
+cor(baths,livarea)
+```
+
+**Comment**: Drawing like above, based on the graph, the more baths there are, the higher the area of the house. The correlation between baths and livarea is about 72%
+
+### f) sprice and beds
+
+```{r}
+boxplot(livarea~beds,col=rainbow(6),ylab='livarea(hundreds of ft^2)')
+cor(livarea,beds)
+```
+
+**Comment**: Continue with beds, based on the boxplot graph, the more bedrooms a house has, the higher the area of the house. On average, the area of a house with 2 bedrooms is smaller than that of a house with 3 bedrooms.There is a relatively correlation of about 58%.
+
+## III. Quantifier and Qualitative
+
+### a) livarea and lgelot
+
+```{r}
+boxplot(livarea~lgelot,col=rainbow(2),ylab='livarea(hundreds of ft^2)')
+```
+
+**Comment**: For houses with a size of <=0.5 acres, there are some outliers but the number is not significant, while houses with a size larger than 0.5 acres have no outliers. Based on the boxplot graph, we see that the average area of houses with a size of <=0.5 acres is smaller than the average area of houses with a size of >0.5 acres. However, houses with a size of <=0.5 acres do not vary much, while houses with a size >0.5 acres have large and wide variations.
+
+
+
+### b) age and pool
+
+```{r}
+boxplot(age~pool,col=rainbow(2),ylab = 'age(years)')
+```
+
+**Comment**: Houses with and without swimming pools both have some outliers but the number is not significant. Based on the boxplot, both types of houses have relative variations in the age of the house. It seems that the average age of houses with swimming pools is equal to the average age of houses without swimming pools.
+
+
+
+### c) sprice and lgelot
+
+```{r include=FALSE}
+boxplot(sprice~lgelot,col=rainbow(2),ylab = 'sprice(dollars)')
+```
+
+**Comment**: Let's do exactly the same as two case above. Base on **Figure 1** For houses with a size of <=0.5 acres and >0.5 acres, there are some outliers where the number of outliers for <=0.5 acres houses is quite high.The selling price of >0.5 acres houses has wide and large variations, while <=0.5 acres houses have insignificant variations. Houses with a size >0.5 acres have a higher average selling price compared to houses with a size <=0.5 acres.
+
+
+
+### d) sprice and pool
+
+```{r include=FALSE}
+boxplot(sprice~pool,col=rainbow(2),ylab = 'sprice(dollars)')
+```
+
+**Comment**: Continue with sprice and pool,base on **Figure 2** for houses with and without a pool, there are some outliers, with a higher number of outliers for houses without a pool. The selling price of houses with a pool has wide and large variations, while houses without a pool have insignificant variations. Houses with a pool have a higher average selling price compared to houses without a pool.
+
+## IV. Hypothesis Testing
+### I.Qualitative
+#### a) The proportion of the houses with pool in the dataset is not more than 7%.
+
+> p is the proportion of the houses with pool in the dataset.
+
+> $H_0: p = 7\%$
+
+> $H_a: p < 7\%$
+
+```{r}
+prop.test(bangpool[2],length(pool),0.07,alternative = 'less',correct = FALSE)
+
+```
+
+Because $p_{value}=0.2394 > 0.05 \rightarrow Accept\ H_0$. Therefore, we cannot conclude that the proportion of the houses with pool in the dataset is not more than 7% at risk level $\alpha = 5\%$
+
+#### b) The proportion of the houses with size larger than 0.5 acres is bigger than 6%.
+
+> p is the proportion of the houses with size larger than 0.5 acres
+
+> $H_0: p = 6\%$
+
+> $H_a: p > 6\%$
+
+```{r}
+prop.test(banglge[2],length(lgelot),0.06,alternative = 'greater',correct = FALSE)
+```
+
+Because $p_{value}=0.2934 > 0.05 \rightarrow Accept\ H_0$. Therefore, we cannot conclude that the proportion of the houses with size larger than 0.5 acres is bigger than 6%. at risk level $\alpha = 5\%$
+
+
+
+#### c) The proportion of houses with a size of larger than 0.5 acres in houses without pool is smaller than the proportion of houses with a size of larger than 0.5 acres in houses with pool.
+
+$p_1$ is the proportion of houses with a size of larger than 0.5 acres in houses without pool
+
+$p_2$ is the proportion of houses with a size of larger than 0.5 acres in houses with pool
+
+> $H_0: p_1 = p_2$
+
+> $H_a: p_1 < p_2$
+
+```{r}
+prop.test(c(tbl[3],tbl[4]),c(length(pool[pool=='0']),length(pool[pool=='1'])),alternative = 'less',correct = 'FALSE')
+
+```
+
+Because $p_{value} < 0.05 \rightarrow Reject\ H_0$. Therefore, we conclude that the proportion of houses with a size of larger than 0.5 acres in houses without pool is smaller than the proportion of houses with a size of larger than 0.5 acres in houses with pool at risk level $\alpha = 5\%$
+
+
+
+### II.Quantifier
+#### a) The average selling price is about 100,000 dollars
+
+> $H_0: \mu = 100000$
+
+> $H_a: \mu \neq 100000$
+
+```{r}
+t.test(sprice,mu=100000,alternative = 'two.sided',)
+```
+
+Because $p_{value} < 0.05 \rightarrow Reject\ H_0$. Therefore, we conclude the average selling price is not about 100,000 dollars at risk level $\alpha = 5\%$
+
+#### b) The average house area is around 17 hundreds of square feet
+
+> $H_0: \mu = 17$
+
+> $H_a: \mu \neq 17$
+
+```{r}
+t.test(livarea,mu=17,alternative = 'two.sided')
+```
+
+Because $p_{value} = 0.07264 > 0.05 \rightarrow Accept\ H_0$. Therefore, we conclude the average house area is around 17 hundreds of square feet at risk level $\alpha = 5\%$
+
+#### c) The average area of houses with a size of <=0.5 acres is smaller than the average area of houses with a size of >0.5 acres
+
+$\mu_1:$ the average area of houses with a size of <=0.5 acres
+
+$\mu_2:$ the average area of houses with a size of >0.5 acres
+
+> $H_0: \mu_1 = \mu_2$
+
+> $H_a: \mu_1 < \mu_2$
+
+```{r}
+t.test(livarea[lgelot=='0'],livarea[lgelot=='1'],alternative = 'less')
+```
+
+Because $p_{value} = 2.158e^{-13} < 0.05 \rightarrow Reject\ H_0$. Therefore, we conclude the average area of houses with a size of <=0.5 acres is smaller than the average area of houses with a size of >0.5 acres at risk level $\alpha = 5\%$
+
+#### d) The average age of houses with swimming pools is equal to the average age of houses without swimming pools.
+
+$\mu_1:$ the average age of houses with swimming pools
+
+$\mu_2:$ the average age of houses without swimming pools
+
+> $H_0: \mu_1 = \mu_2$
+
+> $H_a: \mu_1 \neq \mu_2$
+
+```{r}
+t.test(age[pool=='1'],age[pool=='0'],alternative = 'two.sided')
+```
+
+Because $p_{value} = 0.5675 > 0.05 \rightarrow Accept\ H_0$. Therefore, we conclude the average age of houses with swimming pools is equal to the average age of houses without swimming pools at risk level $\alpha = 5\%$
+
+#### e) The houses with a size >0.5 acres have a higher average selling price compared to houses with a size <=0.5 acres.
+
+$\mu_1:$ the average selling price of houses with a size >0.5 acres
+
+$\mu_2:$ the average selling price of houses with a size <=0.5 acres
+
+> $H_0: \mu_1 = \mu_2$
+
+> $H_a: \mu_1 > \mu_2$
+
+```{r}
+t.test(sprice[lgelot=='1'],sprice[lgelot=='0'],alternative = 'greater')
+```
+
+Because $p_{value} < 2.2e^{-16} < 0.05 \rightarrow Reject\ H_0$. Therefore, we conclude the houses with a size >0.5 acres have a higher average selling price compared to houses with a size <=0.5 acres at risk level $\alpha = 5\%$
+
+#### f) Houses with a pool have a higher average selling price compared to houses without a pool
+
+$\mu_1:$ the average selling price of houses with a pool
+
+$\mu_2:$ the average selling price of houses without a pool
+
+> $H_0: \mu_1 = \mu_2$
+
+> $H_a: \mu_1 > \mu_2$
+
+```{r}
+t.test(sprice[pool=='1'],sprice[pool=='0'],alternative = 'greater')
+```
+
+Because $p_{value} = 2.262e^{-08} < 0.05 \rightarrow Reject\ H_0$. Therefore, we conclude the houses with a pool have a higher average selling price compared to houses without a pool at risk level $\alpha = 5\%$
+
+## V. Prediction model
+### a) Eliminate outlier from dataset
+
+As above mention, sprice has 101 outliers acounted for 6.7% in the dataset. We will remove it.
+
+```{r fig.height=3}
+datanew = read.csv('stockton4.csv',header = TRUE)
+q75 = quantile(datanew$sprice, 0.75)
+q25 = quantile(datanew$sprice, 0.25)
+IQR = q75-q25
+# lower bound
+lower_bound = q25 - 1.5 * IQR
+# upper bound
+upper_bound = q75 + 1.5 * IQR
+newdata = subset(datanew,datanew$sprice>lower_bound & datanew$sprice<upper_bound)
+print('Length of outliers: ')
+length(outliers(newdata$sprice))/length(newdata$sprice)
+print('dimension of current data: ')
+dim(newdata)
+```
+
+After remove the outliers, we have some new outliers acounted for 1.4% which is not significant. Therefore, we can ignore it.
+
+### b) Split training and validate set
+
+```{r}
+set.seed(7)
+index <- sample(nrow(newdata), 980,replace = FALSE)
+train = newdata[index,] #training data set 
+
+validate = newdata[-index,] #validation data set
+print('train set:')
+head(train)
+print('validate set:')
+head(validate)
+```
+
+We split data into train and test with ratio of 7/3. Almost always the training set is greater than the research set. 70:30 is the most common split ratio used by data scientists. A 70:30 split ratio means that 70% of the knowledge will go to the training set and 30% of the dataset will go to the validation set.
+
+### c) Multiple linear regression
+
+```{r include=FALSE}
+#install.packages('PerformanceAnalytics')
+library(PerformanceAnalytics)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+chart.Correlation(train,histogram = TRUE,pch='+')
+attach(train)
+```
+
+Based on the above graph, the correlation of sprice with other variables is not strong. Meanwhile, livarea has a relatively high correlation with other variables. The variables sprice, baths, and beds which are quantifiers have the most linear relationship with the livarea variable. Therefore, we choose living area (hundreds of square feet) is our research purposes. We want to build a model to predict living area (hundreds of square feet).
+
+Model: $\hat{Y} = \hat{B_0} + \hat{B_1}sprice + \hat{B_2}beds + \hat{B_3}baths$
+
+Three variables have positive correlations with livarea. Among of them, the correlation of beds is the weakest. We will choose these variables to explain livarea. Then we will test if $\hat{B_2} = 0$.
+
+
+$H_0: B_1 = B_2 = B_3 = 0$
+
+$H_a: At\ least\ one\ B_i \neq 0$
+
+
+```{r}
+fit = lm(livarea~sprice+beds+baths)
+summary(fit)
+anova(fit)
+```
+
+
+Because $p_{value}< 2.2e^{-16} \rightarrow Reject\ H_0$. This is a highly significant result. The null hypothesis should be rejected at any reasonable significance level. Therefore at least one variable can be used to explain. Moreover, we can see that at risk level $\alpha=5\%$, sprice , beds, baths have the meaning to explain livarea in this model. Among that $p_{value}$ of beds is smaller than 0.5 then Reject $H_0$, we can use to explain livarea.
+
+Moreover, $R^2=74.02\%$ means that $74.02\%$ of the observed variation in livarea can be explained by the linear regression relationship based on sprice, beds, baths.
+
+After that we have the model: $\hat{Y} = -2.797e^{+00} + 5.724e^{-05}sprice + 1.684e^{+00}beds +3.284e^{+00}baths$. This model shows that when increasing 1 dollar then living area increases $5.724e^{-05}$ hundreds of square feet; increasing 1 number of beds then living area increases $1.684e^{+00}$ hundreds of square feet; increasing 1 number of baths then living area increases $3.284e^{+00}$ hundreds of square feet.
+
+### d) Exam multicollinearity of model:
+
+```{r warning=FALSE, include=FALSE}
+library(olsrr)
+```
+
+```{r}
+ols_vif_tol(fit)
+```
+
+
+The VIF indexes of three variables sprice,beds, baths are not significant. Therefore we can ignore the multicollinearity of this model.
+
+### e) Predict validation data
+
+```{r fig.height=2, warning=FALSE, include=FALSE}
+par(mar=c(1,1,0,0))
+predictvalue = predict(fit,newdata = data.frame(sprice = validate$sprice,beds = validate$beds,baths = validate$baths))
+cat('Root mean square error: ',sqrt(mean((predictvalue - validate$livarea)^2))) #RMSE càng gần 0 càng tốt)
+
+plot(predictvalue, validate$livarea, xlab = "Predicted Values", ylab = "Observed Values",col=rainbow(2))
+
+abline(a = 0, b = 1, col = "red", lwd = 2)                               
+
+```
+
+```{r}
+cat('Root mean square error: ',sqrt(mean((predictvalue - validate$livarea)^2))) #RMSE càng gần 0 càng tốt)
+```
+
+After having prediction values, we can see that root mean square error is equal to 2.326186. There are still some predicted values that differ significantly from the actual values. However, the model can be considered acceptable for now.
+
+### f) Exam the independence of the model
+
+```{r}
+car::durbinWatsonTest(fit)
+```
+
+Because $p_{value}= 0.672 > 0.05 \rightarrow\ Accept\ H_0$. Therefore, there is no correlation among the residuals at rist level $\alpha =5\%$
+
+### g) Exam stability of model
+
+```{r}
+library(lmtest)
+bptest(fit)
+```
+
+Because $p_{value}= 0.01943 < 0.05 \rightarrow\ reject\ H_0$. Therefore the variance of the residuals is not constant.
+
+
+```{r include=FALSE}
+plot(fit,1,col = 'blue',main = 'Model 1')
+
+
+```
+
+```{r}
+shapiro.test(fit$residuals)
+```
+
+
+When observing above plot, a fan or cone shape indicates the presence of heteroskedasticity. This is seen as a problem because linear regression assumes that the spread of residuals is constant across the plot. If there is an unequal scatter of residuals, the population used in the regression contains unequal variance, and therefore the analysis results may be invalid. As we can see, $p_{value} = 1.885e^{-06}<0.05\rightarrow Reject\ H_0$. Therefore the residuals do not adhere to normal distribution at risk level $\alpha=5\%$.
+
+## VI. Solving heteroskedasticity
+### a) Transforming the outcome variable
+
+We will transform the livarea by using a log transformation.
+
+```{r}
+fitfix1 = lm(log(livarea)~sprice+beds+baths)
+summary(fitfix1)
+bptest(fitfix1)
+shapiro.test(fitfix1$residuals)
+```
+
+This seems like log model is better than normal model. However, the log transformation did not solve the problem in this case because $p_{value} = 0.002459<0.05\rightarrow Reject\ H_0$ when using studentized Breusch-Pagan test. Therefore problem that the variance of residuals is not constant is still here with the risk level at $\alpha =5\%$. When using Shapiro-Wilk normality test, $p_{value} = 0.03317 < 0.05 \rightarrow Reject H0$. The residuals do not adhere to normal distribution at risk level $\alpha = 5\%$. However, the residuals adhere to normal distribution at risk level $\alpha = 3\%$
+
+### b) Weighted least squares regression
+
+Weighted least squares regression is a generalization of ordinary least squares (OLS) and linear regression in which the unequal variance of observations (heteroscedasticity) is incorporated into the regression. In WLS, each observation is weighted by the reciprocal of its variance. This means that observations with smaller variances, which contain more information, are given more weight in the regression. The weights are used to construct a weight matrix, which is used to modify the normal equations of the OLS method to obtain the WLS estimates.
+
+```{r}
+wt = 1 / lm(abs(fitfix1$residuals) ~ fitfix1$fitted.values)$fitted.values^(2)
+fitfix2 = lm(log(livarea)~sprice+beds+baths,weights = 1/wt)
+#plot(fitfix2,1,col='blue',main = 'Model 3')
+bptest(fitfix2)
+shapiro.test(fitfix2$residuals)
+summary(fitfix2)
+hist(fitfix2$residuals,col = bluemono,freq = FALSE,main='',xlab='residuals')
+curve(dnorm(x, mean = mean(fitfix2$residuals), sd = sd(fitfix2$residuals)), add = TRUE,col='red')
+```
+
+As we can see when using studentized Breusch-Pagan test, $p_{value} = 0.3555>0.05\rightarrow Accept\ H_0$. Therefore we can think that the variance of the residuals is constant at risk level $\alpha =5\%$. However, when using Shapiro-Wilk normality test, $p_{value} = 0.02724<0.05\rightarrow Reject\ H_0$. The residuals do not adhere to normal distribution at risk level $\alpha=5\%$. However, the residuals adhere to normal distribution at risk level $\alpha=2\%$. As we can see, the histogram is like having the normal distribution.
+
+
+
+```{r}
+predictvalue = predict(fitfix2,newdata = data.frame(sprice = validate$sprice,beds = validate$beds,baths = validate$baths))
+cat('Root mean square error:',sqrt(mean((exp(predictvalue) - validate$livarea)^2))) #RMSE càng gần 0 càng tốt
+
+```
+
+Compare to model 1, RMSE is approximately equal.
+
+
+### c) Conclude
+
+All three models does not have residuals that adhere to normal distribution at risk level $\alpha=5%$. Among of them, model 3 is the best model that satisfied no correlation among the residuals, the variance of the residuals is constant, residuals that adhere to normal distribution at risk level lower. The problem may arise due to the influence of outliers in the variables even though they have been processed, or simply because the initial assumption of using a linear regression model to handle this dataset is not appropriate.
+
+
+
+
+### d) Choose other models with AIC standard
+
+```{r include=FALSE}
+step(lm(train$livarea~.,data = train))
+
+```
+
+The best model is $\hat{livarea} = B_0 + B_1sprice + B_2beds + B_3baths + B_4lgelot + B_5age$ according to AIC standard. As shown by above plot, age and lgelot do not have correlations with livarea. Let's exam we can drop it.
+
+>$H_0: \hat{B_4}=\hat{B_5}=0$
+
+>$H_a: \exists B_i \neq 0$
+
+```{r}
+model_null = lm(livarea ~ sprice + beds + baths)
+model_ALL = lm(livarea ~ sprice + beds + baths + lgelot + age)
+anova(model_null,model_ALL)
+```
+
+Because $p_{value}=0.000002041<0.05\rightarrow Reject\ H_0$. Therefore, we can drop age and lgelot variables for this case.
+
+
+### e) Exam AIC model
+
+```{r warning=FALSE}
+bestmodel = lm(train$livarea ~ train$sprice + train$beds + train$baths + train$lgelot + train$age)
+summary(bestmodel)
+car::durbinWatsonTest(bestmodel)
+bptest(bestmodel)
+shapiro.test(bestmodel$residuals)
+predictvalue = predict(bestmodel,newdata = validate)
+sqrt(mean(((predictvalue) - validate$livarea)^2))
+
+```
+
+$p_{value} = 0.682 >0.05\rightarrow Accept\ H_0$ when using Durbin Watson Test. Therefore, there is no correlation among the residuals at rist level $\alpha = 5\%$
+
+$p_{value} = 0.00000000000003135 <0.05 \rightarrow Reject\ H_0$ when using studentized Breusch-Pagan test, so the variance of the residuals is not constant.
+
+$p_{value} = 0.000005267 <0.05 \rightarrow Reject\ H_0$ when using Shapiro-Wilk normality test, so the residuals does not adhere to normal distribution. Finally, root mean square error is equal to 5.246857 worse than above model.
+
+### f) AIC model with weight
+
+```{r warning=FALSE}
+wt = 1 / lm(abs(bestmodel$residuals) ~ bestmodel$fitted.values)$fitted.values^(2)
+bestmodel3 = lm(train$livarea ~ train$sprice + train$beds + train$baths + train$lgelot + train$age,weights = wt)
+#car::durbinWatsonTest(bestmodel3)
+bptest(bestmodel3)
+shapiro.test(bestmodel3$residuals)
+predictvalue = predict(bestmodel3,newdata =validate)
+cat('Root mean square error: ',sqrt(mean(((predictvalue) - validate$livarea)^2)))
+```
+
+$p_{value} = 0.0000000000002341 <0.05 \rightarrow Reject \ H_0$ when using studentized Breusch-Pagan test, so the variance of the residuals is not constant.
+
+$p_{value} = 0.000006667 <0.05\rightarrow Reject H_0$ when using Shapiro-Wilk normality test, so the residuals does not adhere to normal distribution. Finally, root mean square error is equal to 5.20272 worse than above model.
+
+### g) log(model)
+
+```{r warning=FALSE}
+bestmodel1 = lm(log(train$livarea) ~ train$sprice + train$beds + train$baths + train$lgelot + train$age)
+summary(bestmodel1)
+#car::durbinWatsonTest(bestmodel1)
+bptest(bestmodel1)
+shapiro.test(bestmodel1$residuals)
+predictvalue = predict(bestmodel1,newdata = data.frame(sprice = validate$sprice,beds = validate$beds,baths = validate$baths,lgelot=validate$lgelot, age=validate$age))
+cat('Root mean square error: ',sqrt(mean((exp(predictvalue) - validate$livarea)^2)))
+#hist(bestmodel1$residuals,col = bluemono,freq = FALSE,main='')
+#curve(dnorm(x, mean = mean(bestmodel1$residuals), sd = sd(bestmodel1$residuals)), add = TRUE,col='red')
+```
+
+$p_{value} = 0.0000000000066 <0.05 \rightarrow Reject\ H_0$ when using studentized Breusch-Pagan test, so the variance of the residuals is not constant.
+
+$p_{value} = 0.03995 <0.05 \rightarrow Reject\ H_0$ when using Shapiro-Wilk normality test, so the residuals does not adhere to normal distribution. Finally, root mean square error is equal to 5.320361 worse than above model.
+
+### h) log(model) with weight
+
+```{r warning=FALSE}
+wt = 1 / lm(abs(bestmodel1$residuals) ~ bestmodel1$fitted.values)$fitted.values^(2)
+bestmodel2 = lm(log(train$livarea) ~ train$sprice + train$beds + train$baths + train$lgelot + train$age,weights = wt)
+summary(bestmodel2)
+#car::durbinWatsonTest(bestmodel2)
+bptest(bestmodel2)
+shapiro.test(bestmodel1$residuals)
+predictvalue = predict(bestmodel2,newdata = data.frame(sprice = validate$sprice,beds = validate$beds,baths = validate$baths,lgelot=validate$lgelot, age=validate$age))
+cat('Root mean square error: ',sqrt(mean((exp(predictvalue) - validate$livarea)^2)))
+#hist(bestmodel2$residuals,col = bluemono,freq = FALSE)
+#curve(dnorm(x, mean = mean(bestmodel2$residuals), sd = sd(bestmodel2$residuals)), add = TRUE,col='red')
+```
+
+$p_{value} < 0.00000000000000022 <0.05 \rightarrow Reject\ H_0$ when use studentized Breusch-Pagan test, so the variance of the residuals is not constant. $p_{value} = 0.03995 <0.05 \rightarrow Reject\ H_0$ when using Shapiro-Wilk normality test, so the residuals does not adhere to normal distribution. Finally, root mean square error is equal to 5.276937 worse than above model.
+
+### i) Boxcox transformation
+Box-Cox transformation is a statistical technique that involves transforming your target variable so that your data follows a normal distribution. Box-Cox transformation helps to improve the predictive power of your analytical model because it cuts away white noise.The basic idea behind this method is to find some value for $\lambda$ such that the transformed data is as close to normally distributed as possible, using the following formula:
+
+$\left\{\begin{matrix}
+y(\lambda)=\frac{y^{\lambda}-1}{\lambda}, \lambda \neq 0 \\y(\lambda)=log(y), \lambda =0
+\end{matrix}\right.$
+
+We examed with $\lambda = 0$, now let's check with $\lambda \neq 0$:
+
+```{r include=FALSE}
+library(MASS)
+bc1 = boxcox(fitfix2)
+```
+
+```{r}
+lamda1 = bc1$x[which.max(bc1$y)]
+cat('Model with good correlation and lambda =  ',lamda1,'\n')
+model1lam = lm(((livarea)^lamda1-1)/lamda1 ~ sprice+beds+baths, data = train)
+bptest(model1lam)
+shapiro.test(model1lam$residuals)
+predictvalue = predict(model1lam,newdata = validate)
+rootmeansquare=sqrt(mean((predictvalue*lamda1+1)^(1/lamda1) - validate$livarea)^2)
+cat('Root mean square error: ',rootmeansquare,'\n')
+```
+
+Although the root mean square error is quite small, indicating that the model has a good fit. However, two issues, the variance of the residuals is not constant and residuals do not adhere to normal distribution, still remain, leading to the possibility that the model’s results may not be accurate.
+
+## Conclusion for the final model
+
+Model 3 is the best model that satisfied no correlation among the residuals, the variance of the residuals is constant, residuals that adhere to normal distribution at risk level $\alpha=2\%$. The remaining models violate one or both of the above conditions.
+
+```{r}
+summary(fitfix2)
+```
+
+
+$R^2=70\%$ means that $70\%$ of the observed variation in livarea can be explained by the model based on sprice, beds, baths.
+
+The model 3: $\hat{livarea}=e^{1.5899593067}e^{0.0000037038sprice}e^{0.0989562307beds}e^{0.1968430531baths}$. When the selling price increases by 1 dollar, the living area increases by 1.000003704 times, when the number of bedrooms increases by 1, the living area increases by 1.104017976 times, when the number of bathrooms increases by 1, the living area increases by 1.217552935 times.
+
+
+# Activity 2
+
+
+
+## Introduction
+The Global Health Observatory (GHO) data repository under World Health Organization (WHO) keeps track of the health status as well as many other related factors for all countries The data-sets are made available to public for the purpose of health data analysis. The data-set related to life expectancy, health factors for 193 countries has been collected from the same WHO data repository website and its corresponding economic data was collected from United Nation website. Although there have been lot of studies undertaken in the past on factors affecting life expectancy considering demographic variables, income composition and mortality rates. It was found that affect of immunization and human development index was not taken into account in the past. This dataset is to be used for Machine Learning and Data Visualization purposes.
+
+About data: This dataset contains 10 columns in 22 columns of the big dataset, including Status, Life expectancy, Adult Mortality, Alcohol, Total expenditure, Hepatitis B, BMI, Income composition of resources, Schooling, Population. 
+
+Dataset includes 2938 observations of 10 variables:
+
+* Quantifier: Life_expectancy, Adult_Mortality, Alcohol, Total_expenditure, Hepatitis_B, BMI, Income_composition_of_resources, Schooling, Population
+* Qualitative: Status
+
+
+
+| Variable | Definition |
+| --- | --- |
+| Life_expectancy | Life Expectancy in age (years) |
+| Adult_Mortality | Adult Mortality Rates of both sexes (probability of dying between 15 and 60 years per 1000 population)(%) |
+| Alcohol | recorded per capita (15+) consumption (in litres of pure alcohol) |
+| Total_expenditure | General government expenditure on health as a percentage of total government expenditure (%) |
+| Hepatitis_B | Hepatitis B (HepB) immunization coverage among 1-year-olds (%) |
+| BMI | Average Body Mass Index of entire population |
+| Income_composition_of_resources | Human Development Index in terms of income composition of resources (index ranging from 0 to 1) |
+| Schooling | Number of years of Schooling(years) |
+| Population | Population of the country |
+| Status | Developed or Developing status |
+
+
+###### Dataset Source: Life Expectancy WHO is taken from Kaggle and helps in predicting life expectancy with the help of various factors for a period of 15 years.
+
+Purposes of research:
+
+* Testing whether the average life expectancy of developed countries is greater than that of developing countries
+* Build a model to predict average life expectancy based on factors affecting life expectancy
+
+
+
+```{r include=FALSE}
+setwd('D:/21125042/midtermStat2')
+data2 = read.csv('lifeold.csv',header = TRUE)
+```
+
+## I. Clean dataset
+
+```{r}
+print('NA value:')
+cat('Status',sum(is.na(data2$Status)),' - ','Life_expectancy',sum(is.na(data2$Life_expectancy)),' - ','Adult_Mortality',sum(is.na(data2$Adult_Mortality)),' - ','Alcohol',sum(is.na(data2$Alcohol)))
+cat('Hepatitis_B',sum(is.na(data2$Hepatitis_B)),' - ','BMI',sum(is.na(data2$BMI)),' - ','Income_composition_of_resources',sum(is.na(data2$Income_composition_of_resources)))
+cat('Schooling',sum(is.na(data2$Schooling)),' - ','Total_expenditure',sum(is.na(data2$Total_expenditure)),' - ','Population',sum(is.na(data2$Population)))
+
+```
+
+There are many rows containing NA-value in the dataset. Among them, Hepatitis B and Population have the highest NA numbers, respectively 553 and 652. Therefore we will replace them by mean value before going to the next step. After that, we have the new dataset not containing any NA-value.
+
+```{r}
+#data2 = na.omit(data2)
+```
+
+
+```{r}
+#data2 = na.omit(data2)
+data2$Life_expectancy[is.na(data2$Life_expectancy)] = mean(data2$Life_expectancy,na.rm = T)
+data2$Adult_Mortality[is.na(data2$Adult_Mortality)] = mean(data2$Adult_Mortality,na.rm = T)
+data2$Alcohol[is.na(data2$Alcohol)] = mean(data2$Alcohol,na.rm = T)
+data2$Hepatitis_B[is.na(data2$Hepatitis_B)] = mean(data2$Hepatitis_B,na.rm = T)
+data2$BMI[is.na(data2$BMI)] = mean(data2$BMI,na.rm = T)
+data2$Total_expenditure[is.na(data2$Total_expenditure)] = mean(data2$Total_expenditure,na.rm = T)
+data2$Income_composition_of_resources[is.na(data2$Income_composition_of_resources)] = mean(data2$Income_composition_of_resources,na.rm = T)
+data2$Schooling[is.na(data2$Schooling)] = mean(data2$Schooling,na.rm = T)
+data2$Population[is.na(data2$Population)] = mean(data2$Population,na.rm = T)
+
+```
+
+## II. Preprocess outliers
+
+```{r}
+print('Outliers:')
+cat('Life_expectancy ',length(outliers(data2$Life_expectancy )),' - ','Adult_Mortality ',length(outliers(data2$Adult_Mortality )),' - ','Alcohol ',length(outliers(data2$Alcohol )))
+cat()
+cat('Hepatitis_B ',length(outliers(data2$Hepatitis_B )),' - ','BMI ',length(outliers(data2$BMI )),' - ','Income_composition_of_resources ',length(outliers(data2$Income_composition_of_resources )))
+cat('Schooling ',length(outliers(data2$Schooling )),' - ','Total_expenditure ',length(outliers(data2$Total_expenditure )),' - ','Population',length(outliers(data2$Population)))
+
+```
+
+It can be seen that each variable has outliers. Among them, the variable serving the research purpose, life expectancy, has only 17 outliers, accounting for a very small number compared to the size of the data. The variables Income composition of resources, Hepatitis B, Population have outlier numbers exceeding 100, respectively 130, 316, 194. We will solve it after Descriptive Statistics section.
+
+## III. Descriptive Statistics
+### a) Status
+
+```{r}
+bangpool=table(data2$Status)
+library(ggplot2)
+# Tính toán phần trăm cho mỗi khoảng
+datapool <- data.frame(
+  category = c("Developed", "Developing"),
+  count = c(bangpool)
+)
+# Tính toán phần trăm cho mỗi khoảng
+datapool$percent <- round(datapool$count / sum(datapool$count) * 100, 1)
+# Draw pie chart
+ggplot(datapool, aes(x = "", y = count, fill = category)) +
+  geom_bar(width = 5, stat = "identity", color = "black", linewidth = 0.5) +
+  coord_polar("y", start = 0) + theme_void()+
+  geom_text(aes(label = paste0(percent, "%")), position = position_stack(vjust = 0.5)) +
+  theme(plot.margin=unit(c(0,0,0,0),"cm"))
+
+```
+
+**Comment**: Developing countries make up the majority of the data (2409), while developed countries (512) make up a relatively portion. 
+
+We will set Status variable with 1 for Developed and 0 for Developing. Converting the Status variable into a dummy variable will help build the model later.
+
+### b) Life Expectancy in age (years)
+
+```{r}
+hist(data2$Life_expectancy,col = 'blue',breaks = 30,xlab = 'Life Expectancy in age (years)',main = 'Histogram of Life Expectancy')
+#boxplot(data2$Life_expectancy,col = 'purple')
+```
+
+**Comment**: The lifespan falls mostly in the range of 65 to 80 years, with the most common age being around 73 years old. The graph appears to be left-skewed, indicating that the majority have a high average age.
+
+```{r}
+boxplot(data2$Life_expectancy~data2$Status, col=c('orange','green'),ylab = 'Life Expectancy in age (years)',xlab = 'Status')
+```
+
+**Comment**: Based on the graph, the average lifespan of developing countries is lower than that of developed countries. The average lifespan of developing countries has a large fluctuation, while the average lifespan of developed countries is narrow and not significantly fluctuating.
+
+### c) Adult Mortality
+
+```{r include=FALSE}
+hist(data2$Adult_Mortality,breaks = 40,col = 'purple',xlab='Adult_Mortality(%)', main = 'Histogram of Adult_Mortality')
+boxplot(data2$Adult_Mortality~data2$Status, col=c('orange','green'),xlab = 'Status',ylab = 'Adult_Mortality(%)')
+```
+
+Draw the same as above one, based on **Figure 3** the Adult Mortality Rates of both sexes are widely distributed and skewed to the right, meaning that the small Adult Mortality Rates of both sexes account for a large number. In particular, the range from 0 to 200% accounts for a large number but also fluctuates, not evenly high. From about 200%, the distribution is sparse and the number decreases as the Adult Mortality Rates of both sexes increase.
+
+Base on **Figure 4** The Adult Mortality Rates of both sexes have outliers in both developed and developing countries. Developed countries have narrow Adult Mortality Rates of both sexes and do not fluctuate much, while developing countries fluctuate a lot. Looking at the figure, the Adult Mortality Rates of both sexes in developed countries are smaller than those in developing countries.
+
+
+### d) Alcohol(litres)
+
+
+```{r}
+hist(data2$Alcohol,breaks = 40,col = 'orange',xlab = 'Alcohol (litres)',main = 'Histogram of Alcohol')
+```
+
+The histogram is quite evenly distributed, with only two peaks of consumption (in litres of pure alcohol) being almost non-consumption or consuming about 5 liters. 
+
+```{r}
+boxplot(data2$Alcohol~data2$Status, col=rainbow(2),ylab = 'Alcohol (litres)',xlab = '')
+```
+
+Both consumption alcohol in liters of developing countries and developed countries have outliers. Especially, consumption (in litres of pure alcohol) in developing countries is lower than consumption (in litres of pure alcohol) in developed countries, although both fluctuate quite a lot.
+
+### e) BMI
+
+```{r include=FALSE}
+hist(data2$BMI,breaks = 40,col = 'orange',xlab = 'BMI',main = 'Histogram of BMI')
+boxplot(data2$BMI~data2$Status, col=c('orange','green'),xlab = 'Status',ylab = 'BMI')
+```
+
+Based on **Figure 5** , the histogram of BMI is widely distributed but not even, with many peaks but the highest peak is around 58 to 60.
+
+Based on **Figure 6**, the Average Body Mass Index of the entire population of developing countries does not have outliers, but the Average Body Mass Index of the entire population of developed countries has a large number of outliers. However, the Average Body Mass Index of the entire population of developing countries fluctuates greatly and widely, while the Average Body Mass Index of the entire population of developed countries fluctuates narrowly and insignificantly.
+
+### f) Schooling
+
+```{r include=FALSE}
+hist(data2$Schooling,breaks = 40,col = 'yellow',xlab = 'Schooling(years)',main = 'Histogram of Schooling')
+boxplot(data2$Schooling~data2$Status, col=c('red','blue'),ylab = 'Schooling(years)', xlab = 'Status')
+```
+
+Based on **Figure 7**, the highest number of years of schooling is about 12 years. The chart has a number of countries with almost 0 years of schooling. The highest number of years of schooling falls between 11 and 14 years.
+
+Based on **Figure 8**, as predicted, developing countries have a lower average number of years of schooling than the average number of years of schooling in developed countries. The number of years of schooling in both developed and developing countries has outliers and insignificant fluctuations, but the fluctuations in developing countries are greater.
+
+```{r}
+data2$Status[data2$Status=='Developed']=1
+data2$Status[data2$Status=='Developing']=0
+data2$Status=as.numeric(data2$Status)
+```
+
+### g) Analysis correlation
+
+```{r warning=FALSE, include=FALSE}
+library(PerformanceAnalytics)
+```
+
+```{r message=FALSE, warning=FALSE}
+chart.Correlation(data2[1:10],histogram = TRUE,pch='+')
+```
+
+
+**Comment**: Based on the graph, life expectancy has a strong correlation with Adult_Mortality, Income_composition_of_resources, and Schooling, and has a moderate correlation with BMI. Among these, Adult_Mortality has a negative correlation while the rest have positive correlations. However, Schooling and Income_composition_of_resources have a strong correlation with each other. We will check whether Schooling and Income_composition_of_resources are two independent variables or not. Furthermore, although Hepatitis_B and Population have a large number of outliers, they have almost no correlation with other variables. Therefore, we do not need to remove the outliers of Hepatitis_B and Population. Because Adult_Mortality, Income_composition_of_resources, Schooling have relative number of outliers and they have good correlation to predict life expectancy, we also replace them by its mean value.
+
+## IV. Testing hypothesis
+
+### a) The average lifespan of developing countries is lower than that of developed countries
+
+$\mu_1:$ The average lifespan of developing countries
+
+$\mu_2:$ The average lifespan of developed countries
+
+> $H_0: \mu_1 = \mu_2$
+
+> $H_a: \mu_1 < \mu_2$
+
+```{r}
+t.test(data2$Life_expectancy[data2$Status==0],data2$Life_expectancy[data2$Status==1],alternative = 'less')
+```
+
+Because $p_{value} < 2.2e^{-16} \rightarrow Reject H_0$. We can reject null hypothesis at risk level $5\%$. Therefore, we can conclude that the average lifespan of developing countries is lower than that of developed countries.
+
+### b)  The average consumption alcohol in developing countries is lower than the consumption alcohol in developed countries
+
+$\mu_1:$ The average consumption alcohol in developing countries
+
+$\mu_2:$ The average consumption alcohol in developed countries
+
+> $H_0: \mu_1 = \mu_2$
+
+> $H_a: \mu_1 < \mu_2$
+
+```{r}
+t.test(data2$Alcohol[data2$Status==0],data2$Alcohol[data2$Status==1],alternative = 'less')
+```
+
+Because $p_{value} < 2.2e^{-16} \rightarrow Reject H_0$. We can reject null hypothesis at risk level $5\%$. Therefore, we can conclude that the average consumption alcohol in developing countries is lower than the consumption alcohol in developed countries.
+
+### c) Schooling and Income_composition_of_resources are two independent variables
+
+> $H_0$: two variables are independent
+
+> $H_a$: two variables are not independent
+
+
+```{r warning=FALSE}
+chisq.test(data2$Schooling,data2$Income_composition_of_resources)
+```
+
+Because $p_{value} < 2.2e^{-16}\rightarrow Reject\ H_0$. We can reject null hypothesis at risk level $5\%$. Therefore we can conclude that Schooling and Income_composition_of_resources are not two independent variables.
+
+## V. Prediction model
+### a) Proccess outliers after splitting
+```{r}
+q75 = quantile(data2$Life_expectancy, 0.75)
+q25 = quantile(data2$Life_expectancy, 0.25)
+IQR = q75-q25
+# lower bound
+lower_bound = q25 - 1.5 * IQR
+# upper bound
+upper_bound = q75 + 1.5 * IQR
+data2 = subset(data2,data2$Life_expectancy>lower_bound & data2$Life_expectancy<upper_bound)
+
+q75 = quantile(data2$Adult_Mortality, 0.75)
+q25 = quantile(data2$Adult_Mortality, 0.25)
+IQR = q75-q25
+# lower bound
+lower_bound = q25 - 1.5 * IQR
+# upper bound
+upper_bound = q75 + 1.5 * IQR
+data2$Adult_Mortality[data2$Adult_Mortality<lower_bound | data2$Adult_Mortality>upper_bound] = mean(data2$Adult_Mortality,na.rm = T)
+
+q75 = quantile(data2$Income_composition_of_resources, 0.75)
+q25 = quantile(data2$Income_composition_of_resources, 0.25)
+IQR = q75-q25
+# lower bound
+lower_bound = q25 - 1.5 * IQR
+# upper bound
+upper_bound = q75 + 1.5 * IQR
+data2$Income_composition_of_resources[data2$Income_composition_of_resources<lower_bound | data2$Income_composition_of_resources>upper_bound] = mean(data2$Income_composition_of_resources,na.rm = T)
+
+q75 = quantile(data2$Schooling, 0.75)
+q25 = quantile(data2$Schooling, 0.25)
+IQR = q75-q25
+# lower bound
+lower_bound = q25 - 1.5 * IQR
+# upper bound
+upper_bound = q75 + 1.5 * IQR
+data2$Schooling[data2$Schooling<lower_bound | data2$Schooling>upper_bound] = mean(data2$Schooling,na.rm = T)
+
+q75 = quantile(data2$Hepatitis_B, 0.75)
+q25 = quantile(data2$Hepatitis_B, 0.25)
+IQR = q75-q25
+# lower bound
+lower_bound = q25 - 1.5 * IQR
+# upper bound
+upper_bound = q75 + 1.5 * IQR
+data2$Hepatitis_B[data2$Hepatitis_B<lower_bound | data2$Hepatitis_B>upper_bound] = mean(data2$Hepatitis_B,na.rm = T)
+
+q75 = quantile(data2$Population, 0.75)
+q25 = quantile(data2$Population, 0.25)
+IQR = q75-q25
+# lower bound
+lower_bound = q25 - 1.5 * IQR
+# upper bound
+upper_bound = q75 + 1.5 * IQR
+data2$Population[data2$Population<lower_bound | data2$Population>upper_bound] = mean(data2$Population,na.rm = T)
+
+
+
+```
+
+We removed the outliers of life expectancy, and replaced outliers of Adult_Mortality, Income_composition_of_resources, Schooling, Hepatitis_B, Population by their means. After that, we remain 2921 observations. Then, we splitting with ratio of 7/3 because this is the ratio commonly recommended for data analysis
+
+```{r}
+set.seed(7)
+index2 <- sample(nrow(data2), 2045,replace = FALSE)
+train2 = data2[index2,] #training data set 
+validate2 = data2[-index2,] #validation data set
+```
+
+
+```{r}
+attach(train2)
+```
+
+
+
+### b) Model with predictors having good correlations
+
+We will choose Adult_Mortality, BMI, Schooling to be the predictors. Schooling and Income_composition_of_resources are not independent variables, so we only choose one of them. We will choose Schooling because it has stronger correlation than Income_composition_of_resources.Moreover, I want use dummy variable Status to the model.
+
+```{r warning=FALSE}
+library(lmtest)
+library(olsrr)
+modelbestnew =lm(formula = train2$Life_expectancy ~ Status + Adult_Mortality + 
+    BMI + Schooling, data = train2)
+summary(modelbestnew)
+ols_vif_tol(modelbestnew)
+car::durbinWatsonTest(modelbestnew)
+bptest(modelbestnew)
+shapiro.test(modelbestnew$residuals)
+predictvalue = predict(modelbestnew,newdata = validate2)
+cat('Root mean square error: ',sqrt(mean(predictvalue - validate2$Life_expectancy)^2))
+```
+
+Because $p_{value}< 2.2e^{-16} \rightarrow Reject\ H_0$.So the null hypothesis that all four $B_i’s$ corresponding to predictors have value 0 is resoundingly rejected. There appears to be a useful relationship between the dependent variable and at least one of the predictors. We can see $p_{value}$ of 4 variables are too small, so they can be use to explain life expantancy.
+
+Moreover, $R^2= 65.57\%$ means that $65.57\%$ of the observed variation in life_expectancy can be explained by the linear regression relationship based on Status, Adult_Mortality, BMI, Schooling.
+
+The VIF indexes of three variables Status, Adult_Mortality, BMI, Schooling are not significant. Therefore we can ignore the
+multicollinearity of this model.
+
+Because $p_{value} =  0.026 < 0.05 \rightarrow Reject\ H_0$ when using Durbin Watson Test. Therefore, there is correlation among the residuals at rist level $\alpha = 5\%$
+
+Because $p_{value} < 2.2e^{-16} \rightarrow\ reject\ H_0$ with studentized Breusch-Pagan test. Therefore the variance of the residuals is not constant at any risk level.
+
+Because $p_{value} < 2.2e^{-16} \rightarrow\ reject\ H_0$ with Shapiro-Wilk normality test. Therefore the residuals of model do not adhere to normal distribution at any risk level.
+
+After having prediction values, we can see that root mean square error is equal to 0.169167. There are still some predicted values that differ significantly from the actual values.
+
+
+### c) Variable Selection
+
+```{r include=FALSE}
+step(lm(train2$Life_expectancy~.,data = train2))
+```
+
+The best model by AIC criterion is $\hat{Life_expectancy}=B_0+B_1\hat{Status}+B_2\hat{Adult\_Mortality}+B_3\hat{Alcohol}+B_4\hat{Total\_expenditure}+B_5\hat{Hepatitis\_B}+B_6\hat{BMI}+B_7\hat{Income\_composition\_of\_resources}+B_8\hat{Schooling}+B_9\hat{Population}$
+
+Then we exam the hypothesis that:
+
+>$H_0: B_3=B_4=B_5=B_7=B_9=0$
+
+>$H_a: \exists B_i \neq 0$
+
+```{r}
+model1 =lm(formula = train2$Life_expectancy ~ Status + Adult_Mortality + 
+    BMI + Schooling, data = train2)
+model2 =lm(formula = train2$Life_expectancy ~ Status + Adult_Mortality + 
+    Alcohol + Total_expenditure + Hepatitis_B + BMI + Income_composition_of_resources + 
+    Schooling + Population, data = train2)
+anova(model1,model2)
+```
+
+Because $p_{value} < 2.2e^{-16} \rightarrow Reject H_0$. Therefore we can choose full model to test.
+
+
+```{r}
+modelbestnew =lm(formula = train2$Life_expectancy ~ Status + Adult_Mortality + 
+    Alcohol + Total_expenditure + Hepatitis_B + BMI + Income_composition_of_resources + 
+    Schooling + Population, data = train2)
+summary(modelbestnew)
+ols_vif_tol(modelbestnew)
+car::durbinWatsonTest(modelbestnew)
+bptest(modelbestnew)
+shapiro.test(modelbestnew$residuals)
+predictvalue = predict(modelbestnew,newdata = validate2)
+cat('Root mean square error: ',sqrt(mean(predictvalue - validate2$Life_expectancy)^2))
+```
+
+Because $p_{value}< 2.2e^{-16} \rightarrow Reject\ H_0$.So the null hypothesis that all nine $B_i’s$ corresponding to predictors have value 0 is resoundingly rejected. There appears to be a useful relationship between the dependent variable and at least one of the predictors. We can see $p_{value}$ of Schooling = 0.101547 > 0.5. Therefore Schooling is not significant in this model to explain life expectancy at risk level $\alpha=5\%$.
+
+Moreover, $R^2= 74.67\%$ means that $74.67\%$ of the observed variation in life_expectancy can be explained by the linear regression relationship based on Status, Adult_Mortality, Alcohol, Total_expenditure, Hepatitis_B, BMI, Income_composition_of_resources, Schooling, Population.
+
+The VIF indexes of these variables are not significant except for Income_composition_of_resources and Schooling as above explain.
+
+Because $p_{value} =  0.017 < 0.05 \rightarrow Reject\ H_0$ when using Durbin Watson Test. Therefore, there is correlation among the residuals at risk level $\alpha = 5\%$
+
+Because $p_{value} < 2.2e^{-16} \rightarrow\ reject\ H_0$ with studentized Breusch-Pagan test. Therefore the variance of the residuals is not constant at any risk level.
+
+Because $p_{value} < 2.2e^{-16} \rightarrow\ reject\ H_0$ with Shapiro-Wilk normality test. Therefore the residuals of model do not adhere to normal distribution at any risk level.
+
+After having prediction values, we can see that root mean square error is equal to 0.1476864. There are still some predicted values that differ significantly from the actual values but better than above model.
+
+We will drop Schooling:
+
+```{r}
+modelbestnew =lm(formula = train2$Life_expectancy ~ Status + Adult_Mortality + 
+    Alcohol + Total_expenditure + Hepatitis_B + BMI + Income_composition_of_resources +  Population, data = train2)
+summary(modelbestnew)
+#ols_vif_tol(modelbestnew)
+car::durbinWatsonTest(modelbestnew)
+bptest(modelbestnew)
+shapiro.test(modelbestnew$residuals)
+predictvalue = predict(modelbestnew,newdata = validate2)
+cat('Root mean square error: ',sqrt(mean(predictvalue - validate2$Life_expectancy)^2))
+```
+
+$R^2= 74.63\%$ means that $74.63\%$ of the observed variation in life_expectancy can be explained by the linear regression relationship based on Status, Adult_Mortality, Alcohol, Total_expenditure, Hepatitis_B, BMI, Income_composition_of_resources, Population.
+
+Root mean square error is equal to 0.1552736. This model does not differ much from the above model.
+
+Clearly, after removing, this model is better than above model. However two problems (the variance of the residuals is not constant and the residuals of model do not adhere to normal distribution) remain. While $p_{value}=0.138>0.5\rightarrow Accept\ H_0$, when using Durbin Watson Test. Therefore, there is no correlation among the residuals at rist level $\alpha = 5\%$.
+
+
+
+## VI. Recommend different model
+### a) log(model) with the highest correlation
+
+Because Adult_Mortality and Schooling have the highest correlation with life expectancy and there are two kind of country in this dataset. We will build the model from this.
+
+```{r}
+library(lmtest)
+modelbestnew2 =lm(formula = log(train2$Life_expectancy) ~ Status + Adult_Mortality + 
+    Schooling, data = train2)
+summary(modelbestnew2)
+ols_vif_tol(modelbestnew2)
+car::durbinWatsonTest(modelbestnew2)
+bptest(modelbestnew2)
+shapiro.test(modelbestnew2$residuals)
+predictvalue = predict(modelbestnew2,newdata = validate2)
+cat('Root mean square error: ',sqrt(mean(exp(predictvalue) - validate2$Life_expectancy)^2))
+
+```
+
+Because $p_{value}< 2.2e^{-16} \rightarrow Reject\ H_0$.So the null hypothesis that all three $B_i’s$ corresponding to predictors have value 0 is resoundingly rejected. There appears to be a useful relationship between the dependent variable and at least one of the predictors. We can see $p_{value}$ of 3 variables are too small, so they can be use to explain log(life_expantancy).
+
+The VIF indexes of three variables Status, Adult_Mortality, Schooling are not significant. Therefore we can ignore the multicollinearity of this model.
+
+Moreover, $R^2= 60.44\%$ means that $60.44\%$ of the observed variation in log(life_expectancy) can be explained by the linear regression relationship based on Status, Adult_Mortality, Schooling.
+
+After having prediction values, we can see that root mean square error is equal to 0.002763509 that is near 0.
+
+This model is better than above model. However three problems (there is correlation among the residuals, the variance of the residuals is not constant and the residuals of model do not adhere to normal distribution) remain.
+
+
+
+
+### b) log(model) with full model
+
+We can see that Population does not have correlation with life expectancy. Although processing outliers, Total_expenditure has the most outliers. Therefore, we will remove them and Schooling as correlation with Income_composition_of_resources.
+
+```{r}
+modelbestnew3 = lm(formula = log(train2$Life_expectancy) ~ Status + Adult_Mortality + 
+    Alcohol + Hepatitis_B + BMI + Income_composition_of_resources, data = train2)
+summary(modelbestnew3)
+ols_vif_tol(modelbestnew3)
+car::durbinWatsonTest(modelbestnew3)
+bptest(modelbestnew3)
+shapiro.test(modelbestnew3$residuals)
+#hist(modelbestnew3$residuals,freq = FALSE)
+#curve(dnorm(x, mean = mean(modelbestnew3$residuals), sd = sd(modelbestnew3$residuals)), add = TRUE)
+predictvalue = predict(modelbestnew3,newdata = validate2)
+cat('Root mean square error: ',sqrt(mean(exp(predictvalue) - validate2$Life_expectancy)^2))
+```
+
+Because $p_{value}< 2.2e^{-16} \rightarrow Reject\ H_0$.So the null hypothesis that all six $B_i’s$ corresponding to predictors have value 0 is resoundingly rejected. There appears to be a useful relationship between the dependent variable and at least one of the predictors. We can see $p_{value}$ of 6 variables are too small, so they can be use to explain log(life_expantancy).
+
+The VIF indexes of six variables are not significant. Therefore we can ignore the multicollinearity of this model.
+
+Moreover, $R^2=71.49\%$ means that $71.49\%$ of the observed variation in log(life_expectancy) can be explained by the linear regression relationship based on Status, Adult_Mortality, Alcohol, Hepatitis_B, BMI, Income_composition_of_resources.
+
+After having prediction values, we can see that root mean square error is equal to 0.001374664.
+
+This model is better than above model. However two problems (the variance of the residuals is not constant and the residuals of model do not adhere to normal distribution) remain. While $p_{value}=0.236>0.5\rightarrow Accept\ H_0$, when using Durbin Watson Test. Therefore, there is no correlation among the residuals at rist level $\alpha = 5\%$.
+
+### c) Box-Cox transformation
+Firsly, we find the optimal $\lambda$ for two model in V by using boxcox function:
+
+```{r include=FALSE}
+model1 = lm(formula = train2$Life_expectancy ~ Status + Adult_Mortality + 
+    BMI + Schooling, data = train2)
+model2 = lm(formula = train2$Life_expectancy ~ Status + Adult_Mortality + 
+    Alcohol + Total_expenditure + Hepatitis_B + BMI + Income_composition_of_resources +  Population, data = train2)
+bc1 = boxcox(model1)
+lamda1 = bc1$x[which.max(bc1$y)]
+bc2 = boxcox(model2)
+lamda2 = bc2$x[which.max(bc2$y)]
+```
+
+
+```{r warning=FALSE}
+
+cat('Model with good correlation and lambda =  ',lamda1,'\n')
+model1lam = lm(((Life_expectancy)^lamda1-1)/lamda1 ~ Status + Adult_Mortality + 
+    BMI + Schooling, data = train2)
+bptest(model1lam)
+shapiro.test(model1lam$residuals)
+predictvalue = predict(model1lam,newdata = validate2)
+rootmeansquare=sqrt(mean((predictvalue*lamda1+1)^(1/lamda1) - validate2$Life_expectancy)^2)
+cat('Root mean square error: ',rootmeansquare,'\n')
+cat('Full model after drop schooling and  lambda =  ',lamda2,'\n')
+model2lam = lm(((Life_expectancy)^lamda2-1)/lamda2 ~ Status + Adult_Mortality + 
+    Alcohol + Total_expenditure + Hepatitis_B + BMI + Income_composition_of_resources +  Population, data = train2)
+bptest(model2lam)
+shapiro.test(model2lam$residuals)
+predictvalue = predict(model2lam,newdata = validate2)
+rootmeansquare=sqrt(mean((predictvalue*lamda2+1)^(1/lamda2) - validate2$Life_expectancy)^2)
+cat('Root mean square error: ',rootmeansquare,'\n')
+```
+
+
+Although apply to use Box-Cox transformation, the residuals of two models do not adhere to normal distribution and variances are not constants. Moreover two models are not better than log(model) with full model when compared by root mean square error.
+
+
+## VII. Explain the problems
+
+Formal normality tests, such as the Shapiro-Wilk test, can be highly sensitive to sample size. With very large samples, even small deviations from normality can result in a significant result, leading to the rejection of the null hypothesis even if the distribution is reasonably normal for practical purposes. It is a fact that formal normality tests always reject on the huge sample sizes we work with today. And since every dataset has some degree of randomness, no single dataset will be a perfectly normally distributed sample. As we can see $p_{value}$ of studentized Breusch-Pagan test and Shapiro-Wilk normality test are very small, leading to reject null hypothesis. Because the assumption of normality of residuals in the regression model is violated, the models here may not be very reliable.
+
+## Conclusion
+
+```{r include=FALSE}
+library(performance)
+library(sjPlot)
+library(flextable)
+library(tidyverse)
+```
+
+We use compare_performance() function to compute indices of model performance for different models at once and hence allow comparison of indices across models. Any of "all", "common", "AIC", "AICc", "BIC", "WAIC", or "LOOIC are requested in metrics to give the Performance_score. 
+
+```{r message=FALSE, warning=FALSE}
+model0 =lm(Life_expectancy ~ Status + Adult_Mortality + 
+    BMI + Schooling, data = train2)
+model1 =lm(Life_expectancy ~ Status + Adult_Mortality + 
+    Alcohol + Total_expenditure + Hepatitis_B + BMI + Income_composition_of_resources +  Population, data = train2)
+model2 = lm(log(Life_expectancy) ~ Status + Adult_Mortality + 
+    Schooling, data = train2)
+model3 = lm(log(Life_expectancy) ~ Status + Adult_Mortality + 
+    Alcohol + Hepatitis_B + BMI + Income_composition_of_resources, data = train2)
+model1lam = lm(((Life_expectancy)^2-1)/2 ~ Status + Adult_Mortality + 
+    BMI + Schooling, data = train2)
+model2lam = lm(((Life_expectancy)^2-1)/2 ~ Status + Adult_Mortality + 
+    Alcohol + Total_expenditure + Hepatitis_B + BMI + Income_composition_of_resources +  Population, data = train2)
+#car::durbinWatsonTest(model3)
+compare_performance(model1,model2,model3,model1lam,model2lam,rank = TRUE) %>% as_tibble() %>% dplyr::select(-Model,-AIC_wt,-BIC_wt,-AICc_wt,-Sigma,-R2) %>% regulartable(cwidth=1.5)
+```
+
+After considering, model 3 has the highest Performance_score 0.9131815 consistent with the above analysis. Although other models have better parameters when compared to model 3, if we consider the factors mentioned above, model 3 is the best model.
+
+$\hat{y}=e^{3.77448386}e^{0.02470471status}e^{-0.00027642Adult\_Mortality}e^{-0.00194775Alcohol}e^{0.00111065Hepatitis\_B}e^{0.00065968BMI}$
+$e^{0.58010385Income\_composition\_of\_resources}$ is the best model. For developed countries, life expectancy will increase by 1.0250124 compared to developing countries. When the Adult Mortality Rates of both sexes (probability of dying between 15 and 60 years per 1000 population) increases by 1%, then life expectancy decreases by a factor of 1.000276. When consumption (in liters of pure alcohol) increases by 1 liter, then life expectancy decreases by a factor of 1.00195. When Hepatitis B (HepB) immunization coverage among 1-year-olds increases, then life expectancy increases by a factor of 1.001111. When the Average Body Mass Index of the entire population increases by 1, then life expectancy increases by a factor of 1.00066. When the Human Development Index in terms of income composition of resources is 1, then life expectancy increases by a factor of 1.786224.
+
+
+\centerline{--- The End ---}
+
+
+
+
+
+
+
+
